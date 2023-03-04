@@ -5,11 +5,11 @@ app_name = "api"
 
 urlpatterns = [
     path(
-        "photo/upload/",
-        views.PhotoModelViewSet.as_view(
+        "newsletter",
+        views.NewsLetterModelViewSet.as_view(
             {"post": "create"}
         ),
-        name="photo-upload",
+        name="newsletter",
     ),
 
 ]

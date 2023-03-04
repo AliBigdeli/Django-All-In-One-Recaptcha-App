@@ -1,8 +1,11 @@
 from django import forms
-from .models import Photo
+from .models import NewsLetter
+from aio_recaptcha.fields import ReCaptchaField
+from aio_recaptcha.widgets import ReCaptchaV3
 
-class PhotoForm(forms.ModelForm):
-    file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+
+class NewsLetterForm(forms.ModelForm):
+    captcha = ReCaptchaField(widget=ReCaptchaV3())
     class Meta:
-        model = Photo
-        fields = ('file', )
+        model = NewsLetter
+        fields = ('email','captcha' )

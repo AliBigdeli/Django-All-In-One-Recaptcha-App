@@ -52,8 +52,7 @@ class ReCaptchaV3(ReCaptchaBase):
 
     def __init__(self, api_params=None, *args, **kwargs):
         super().__init__(api_params=api_params, *args, **kwargs)
-        if not self.attrs.get("required_score", None):
-            self.attrs["required_score"] = RECAPTCHA_REQUIRED_SCORE
+        self.attrs["required_score"] = RECAPTCHA_REQUIRED_SCORE
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         attrs = super().build_attrs(base_attrs, extra_attrs)

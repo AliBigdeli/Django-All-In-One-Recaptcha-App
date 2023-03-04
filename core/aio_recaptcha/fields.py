@@ -3,7 +3,7 @@ import sys
 from urllib.error import HTTPError
 
 from django import forms
-from .app_settings import RECAPTCHAV3_PUBLIC_KEY,RECAPTCHAV3_PRIVATE_KEY
+from .app_settings import RECAPTCHAV3_PUBLIC_KEY,RECAPTCHAV3_PRIVATE_KEY,RECAPTCHA_DEV_MODE
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -18,7 +18,7 @@ class ReCaptchaField(forms.CharField):
         "captcha_error": _("Error verifying reCAPTCHA, please try again."),
     }
 
-    def __init__(self, public_key=None, private_key=None, *args, **kwargs):
+    def __init__(self,*args, **kwargs):
         """
         ReCaptchaField can accepts attributes which is a dictionary of
         attributes to be passed to the ReCaptcha widget class. The widget will
@@ -38,11 +38,12 @@ class ReCaptchaField(forms.CharField):
         self.required = True
 
         # Setup instance variables.
-        self.private_key = private_key or RECAPTCHAV3_PRIVATE_KEY
-        self.public_key = public_key or RECAPTCHAV3_PUBLIC_KEY
+        self.private_key =  RECAPTCHAV3_PRIVATE_KEY
+        self.public_key = RECAPTCHAV3_PUBLIC_KEY
 
         # Update widget attrs with data-sitekey.
         self.widget.attrs["data-sitekey"] = self.public_key
+        self.dev_mode = RECAPTCHA_DEV_MODE
 
     def get_remote_ip(self):
         f = sys._getframe()
@@ -57,43 +58,29 @@ class ReCaptchaField(forms.CharField):
 
     def validate(self, value):
         super().validate(value)
+        if not self.dev_mode:
+            try:
+                check_captcha = client.submit(
+                    recaptcha_response=value,
+                    private_key=self.private_key,
+                    remoteip=self.get_remote_ip(),
+                )
 
-        try:
-            check_captcha = client.submit(
-                recaptcha_response=value,
-                private_key=self.private_key,
-                remoteip=self.get_remote_ip(),
-            )
+            except HTTPError:  # Catch timeouts, etc
+                raise ValidationError(
+                    self.error_messages["captcha_error"], code="captcha_error"
+                )
 
-        except HTTPError:  # Catch timeouts, etc
-            raise ValidationError(
-                self.error_messages["captcha_error"], code="captcha_error"
-            )
+            if not check_captcha.is_valid:
+                # logger.warning(
+                #     "ReCAPTCHA validation failed due to: %s" % check_captcha.error_codes
+                # )
+                raise ValidationError(
+                    self.error_messages["captcha_invalid"], code="captcha_invalid"
+                )
 
-        if not check_captcha.is_valid:
-            # logger.warning(
-            #     "ReCAPTCHA validation failed due to: %s" % check_captcha.error_codes
-            # )
-            raise ValidationError(
-                self.error_messages["captcha_invalid"], code="captcha_invalid"
-            )
-
-        required_score = self.widget.attrs.get("required_score")
-        if required_score:
-            # Our score values need to be floats, as that is the expected
-            # response from the Google endpoint. Rather than ensure that on
-            # the widget, we do it on the field to better support user
-            # subclassing of the widgets.
-            required_score = float(required_score)
-
-            # If a score was expected but non was returned, default to a 0,
-            # which is the lowest score that it can return. This is to do our
-            # best to assure a failure here, we can not assume that a form
-            # that needed the threshold should be valid if we didn't get a
-            # value back.
-            score = float(check_captcha.extra_data.get("score", 0))
-
-            if required_score > score:
+            required_score = self.widget.attrs.get("required_score")
+            if float(required_score) > float(check_captcha.extra_data.get("score", 0)):
                 # logger.warning(
                 #     "ReCAPTCHA validation failed due to its score of %s"
                 #     " being lower than the required amount." % score

@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from ..models import Photo
+from ..models import NewsLetter
 
 
-class PhotoSerializer(serializers.Serializer):
-    file = serializers.FileField(max_length=None, allow_empty_file=False)
+class NewsLetterSerializer(serializers.Serializer):
+    
+    class Meta:
+        model = NewsLetter
 

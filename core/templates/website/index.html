@@ -22,12 +22,31 @@
 
     <div class="row featurette py-5">
 
-      
+        <div class="col-md-4 order-md-1">
+            <form action="." method="POST" class="form-inline py-3">
+                <div class="form-group">
+                    {% csrf_token %}
+                    {{form.captcha}}
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input type="email" name="email" class="form-control" placeholder="email address">
+                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
+                        else.</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">submit</button>
+            </form>
+        </div>
+        <div class="col-md-4 order-md-1"></div>
+        <div class="col-md-4 order-md-1">
+        </div>
+
+
+
     </div>
 </div>
 
 
-<div class="container px-4 py-5" id="Author">
+<!-- <div class="container px-4 py-5" id="Author">
     <h2 class="pb-2 border-bottom">Author</h2>
     <div class="row featurette py-5">
         <div class="col-md-8 order-md-2">
@@ -110,7 +129,7 @@
         </div>
     </div>
 
-</div>
+</div> -->
 {% endblock %}
 
 {% block extra_js %}
@@ -128,10 +147,10 @@
             processData: false,
             complete: function () {
                 location.reload()
-              }
+            }
         });
 
     });
-     
+
 </script>
 {% endblock %}
