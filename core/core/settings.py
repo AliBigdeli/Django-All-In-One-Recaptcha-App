@@ -271,9 +271,8 @@ if SHOW_DEBUGGER_TOOLBAR:
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
     
+# recaptcha configs
+RECAPTCHA_ADMIN_ENABLE = True
 
 
 
-
-RECAPTCHA_PUBLIC_KEY   = "6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r"
-RECAPTCHA_PRIVATE_KEY  = "6LcBC_kZAAAAADHV8gVD-GMLhr-rZ7c3IMa3hCh7"
