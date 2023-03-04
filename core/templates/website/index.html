@@ -21,8 +21,9 @@
     <h2 class="pb-2 border-bottom">Test Form</h2>
 
     <div class="row featurette py-5">
-
+       
         <div class="col-md-4 order-md-1">
+            <h4 class="pb-2 ">Django Form</h4>
             <form action="." method="POST" class="form-inline py-3">
                 <div class="form-group">
                     {% csrf_token %}
@@ -38,6 +39,22 @@
         </div>
         <div class="col-md-4 order-md-1"></div>
         <div class="col-md-4 order-md-1">
+            <h4 class="pb-2">API Form</h4>
+            <form id="api-form">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input class="form-control" name="email" type="email" placeholder="email address">
+                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
+                        else.</small>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Captcha Token</label>
+                    <textarea class="form-control" name="captcha" type="text" id="captcha"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">submit</button>
+            </form>
+
         </div>
 
 
@@ -139,10 +156,10 @@
         var formData = new FormData($(this)[0]);
         // AJAX request
         $.ajax({
-            url: '/api/photo/upload/',
+            url: '/api/newsletter',
             type: 'post',
             data: formData,
-            dataType: 'multipart/form-data',
+            dataType: 'application/json',
             contentType: false,
             processData: false,
             complete: function () {
@@ -152,5 +169,18 @@
 
     });
 
+</script>
+<script src="https://www.google.com/recaptcha/api.js?render=6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r"></script>
+<script>
+    grecaptcha.ready(function () {
+        // do request for recaptcha token
+        // response is promise with passed token
+        grecaptcha.execute('6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r', { action: 'validate_captcha' })
+            .then(function (token) {
+                // add token value to form
+                $('#captcha').val(token)
+                // console.log(token)
+            });
+    });
 </script>
 {% endblock %}
