@@ -13,6 +13,8 @@ class RecaptchaResponse:
 
 
 def recaptcha_request(params):
+    
+    
     request_object = Request(
         url=f"https://{RECAPTCHA_DOMAIN}/recaptcha/api/siteverify" ,
         data=params,
@@ -21,6 +23,7 @@ def recaptcha_request(params):
             "User-agent": "reCAPTCHA Django",
         },
     )
+    
 
     # Add proxy values to opener if needed.
     opener_args = []
@@ -29,11 +32,11 @@ def recaptcha_request(params):
         opener_args = [ProxyHandler(proxies)]
     opener = build_opener(*opener_args)
 
-    # Get response from POST to Google endpoint.
     return opener.open(
         request_object,
         timeout=RECAPTCHA_VERIFY_REQUEST_TIMEOUT,
     )
+
 
 
 def submit(recaptcha_response, private_key, remoteip):

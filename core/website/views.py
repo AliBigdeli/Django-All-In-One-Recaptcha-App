@@ -11,6 +11,10 @@ class UploadView(CreateView):
     form_class = NewsLetterForm
     success_url = '/'
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['newsletter_list'] = NewsLetter.objects.all()
+        return context
     
     
 

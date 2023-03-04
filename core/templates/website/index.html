@@ -18,14 +18,14 @@
 
 {% block content %}
 <div class="container px-4 py-5" id="form">
-    <h2 class="pb-2 border-bottom">Test Form</h2>
+    <h2 class="pb-2 border-bottom">Test Recaptcha Form</h2>
 
     <div class="row featurette py-5">
-       
-        <div class="col-md-4 order-md-1">
+
+        <div class="col-md-6 order-md-1">
             <h4 class="pb-2 ">Django Form</h4>
-            <form action="." method="POST" class="form-inline py-3">
-                <div class="form-group">
+            <form action="." method="POST" class="form-inline py-1">
+                <div class="form-group py-1">
                     {% csrf_token %}
                     {{form.captcha}}
                     <label for="exampleInputEmail1">Email address</label>
@@ -34,36 +34,48 @@
                         else.</small>
                 </div>
 
-                <button type="submit" class="btn btn-primary">submit</button>
+                <div class="form-group py-1">
+                    <button type="submit" class="btn btn-primary">submit</button>
+                </div>
             </form>
         </div>
-        <div class="col-md-4 order-md-1"></div>
-        <div class="col-md-4 order-md-1">
+
+        <div class="col-md-6 order-md-1">
             <h4 class="pb-2">API Form</h4>
             <form id="api-form">
-                <div class="form-group">
+                <div class="form-group py-1">
                     <label for="exampleInputEmail1">Email address</label>
                     <input class="form-control" name="email" type="email" placeholder="email address">
                     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
                         else.</small>
                 </div>
-                <div class="form-group">
+                <div class="form-group py-1">
                     <label for="exampleInputEmail1">Captcha Token</label>
                     <textarea class="form-control" name="captcha" type="text" id="captcha"></textarea>
                 </div>
-
-                <button type="submit" class="btn btn-primary">submit</button>
+                <div class="form-group py-1">
+                    <button type="submit" class="btn btn-primary">submit</button>
+                </div>
             </form>
-
         </div>
-
-
-
     </div>
 </div>
 
 
-<!-- <div class="container px-4 py-5" id="Author">
+<div class="container px-4 py-5" id="newsletter">
+    <h2 class="pb-2 border-bottom">NewsLetter List</h2>
+    <div class="row featurette p-3">
+        {% for item in newsletter_list %}
+        <div class="col-md-2 order-md-1">
+            <p class="border border-dark rounded text-center text-white bg-secondary">{{item.email}}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+<div class="container px-4 py-5" id="Author">
     <h2 class="pb-2 border-bottom">Author</h2>
     <div class="row featurette py-5">
         <div class="col-md-8 order-md-2">
@@ -146,7 +158,7 @@
         </div>
     </div>
 
-</div> -->
+</div>
 {% endblock %}
 
 {% block extra_js %}
