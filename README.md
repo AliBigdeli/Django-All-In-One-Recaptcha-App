@@ -1,5 +1,5 @@
 <div align="center">
-<img loading="lazy" style="width:700px" src="./docs/banner.jpg">
+<img loading="lazy" style="width:700px" src="./docs/banner.png">
 <h1 align="center">Django All In One Recaptcha App</h1>
 <h3 align="center">Sample Project to add recaptcha to forms,admin,serializer</h3>
 </div>
@@ -14,7 +14,6 @@
 # Guideline
 - [Guideline](#guideline)
 - [Goal](#goal)
-- [Demo](#demo)
 - [Development usage](#development-usage)
   - [Clone the repo](#clone-the-repo)
   - [Enviroment Varibales](#enviroment-varibales)
@@ -32,16 +31,15 @@
 - [Usage](#usage)
   - [Add to Admin Login](#add-to-admin-login)
   - [Add to Django Forms](#add-to-django-forms)
+    - [Django Form Demo](#django-form-demo)
   - [Add to Django RestFramework](#add-to-django-restframework)
+  - [Api Form Demo](#api-form-demo)
 - [Dev Mode and Failing Mode](#dev-mode-and-failing-mode)
 - [License](#license)
 - [Bugs](#bugs)
 
 # Goal
-This project main goal is to provide a sample to show you how to implement multiple file uploading with django form and api.
-
-# Demo
-
+This project main goal is to provide a sample to show you how to use recaptcha in admin,form and serializer.
 
 # Development usage
 You'll need to have [Docker installed](https://docs.docker.com/get-docker/).
@@ -170,7 +168,9 @@ RECAPTCHA_REQUIRED_SCORE = 0.5
 ```
 
 # Usage
-asd
+
+A brief example of how to use the module
+
 ## Add to Admin Login
 
 it cannot be more simpler than this, all you have to do is to enable the environment in the settings and you will be able to see the recaptcha widget in the admin login page.by default its False.
@@ -221,6 +221,11 @@ which you will end up having it inside the page:
 <img loading="lazy" style="width:700px" src="./docs/django-recaptcha-form.png">
 </div>
 
+### Django Form Demo
+<div align="center">
+<img loading="lazy" style="width:700px" src="./docs/form-test.gif">
+</div>
+
 ## Add to Django RestFramework
 also you can add recaptcha or captcha as a field to serializer to check the incoming token which has been created inside the page. 
 all you have to do is to add a custom field inside the serializer just like the demo i made:
@@ -245,7 +250,7 @@ class NewsLetterSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 ```
-**Note:** dont forget to remove the captcha field inside the validator or you will end up with and exception for extra fields to write in the model.
+**Note:** dont forget to remove the captcha field inside the validator or you will end up with an exception for extra fields to write in the model.
 
 and you have to validate the serializer by saying is_valid in the view.
 ```python
@@ -341,6 +346,11 @@ at last you will end up with a form inside the template which will refresh the c
 <img loading="lazy" style="width:700px" src="./docs/django-recaptcha-api.png">
 </div>
 
+## Api Form Demo
+<div align="center">
+<img loading="lazy" style="width:700px" src="./docs/api-test.gif">
+</div>
+
 # Dev Mode and Failing Mode
 in order to test the whole thing locally and bypassing the validations i have provided an environment to by pass all validations and as result it will successfully respond to any validations.
 ```python
@@ -351,6 +361,10 @@ also if you wanted to test your service in failing mode, like each request shoul
 ```python
 RECAPTCHA_ALWAYS_FAIL = True
 ```
+<div align="center">
+<img loading="lazy" style="width:700px" src="./docs/failure-test.gif">
+</div>
+
 
 **Note:** if you want to test it as always failure mode you have to put the dev mode on True mode or else it will not work. this is for making sure your not making any mistakes in production.
 
