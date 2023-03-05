@@ -2,7 +2,8 @@ import uuid
 from urllib.parse import urlencode
 from django.forms import widgets
 
-from aio_recaptcha.app_settings import RECAPTCHA_DOMAIN,RECAPTCHA_REQUIRED_SCORE
+from aio_recaptcha.app_settings import RECAPTCHA_DOMAIN, RECAPTCHA_REQUIRED_SCORE
+
 
 class ReCaptchaBase(widgets.Widget):
     """
@@ -46,9 +47,8 @@ class ReCaptchaBase(widgets.Widget):
         return attrs
 
 
-
 class ReCaptchaV3(ReCaptchaBase):
-    template_name = "aio_recaptcha/widget_v3.html"
+    template_name = "aio_recaptcha/recaptchav3_widget.html"
 
     def __init__(self, api_params=None, *args, **kwargs):
         super().__init__(api_params=api_params, *args, **kwargs)

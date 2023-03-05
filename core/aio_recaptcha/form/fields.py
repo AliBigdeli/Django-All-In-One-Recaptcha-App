@@ -1,3 +1,4 @@
+import logging
 import sys
 from django import forms
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -7,7 +8,14 @@ from urllib.error import HTTPError
 
 from aio_recaptcha.client import submit
 from aio_recaptcha.form.widgets import ReCaptchaBase, ReCaptchaV3
-from aio_recaptcha.app_settings import RECAPTCHAV3_SITE_KEY, RECAPTCHAV3_SECRET_KEY, RECAPTCHA_DEV_MODE ,RECAPTCHA_ALWAYS_FAIL
+from aio_recaptcha.app_settings import (
+    RECAPTCHAV3_SITE_KEY,
+    RECAPTCHAV3_SECRET_KEY,
+    RECAPTCHA_DEV_MODE,
+    RECAPTCHA_ALWAYS_FAIL,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class ReCaptchaField(forms.CharField):
@@ -42,30 +50,32 @@ class ReCaptchaField(forms.CharField):
 
         # Update widget attrs with data-sitekey.
         self.widget.attrs["data-sitekey"] = self.site_key
-        
+
         # check to see if we are running on dev mode
         self.dev_mode = RECAPTCHA_DEV_MODE
 
         self.fail_mode = RECAPTCHA_ALWAYS_FAIL
+
     def get_remote_ip(self):
         frame = sys._getframe()
         while frame and frame.f_back is not None:
             frame = frame.f_back
             if request := frame.f_locals.get("request"):
-                x_forwarded_for = request.META.get('HTTP_REMOTE_ADDR') or request.META.get("HTTP_X_FORWARDED_FOR", "")
+                x_forwarded_for = request.META.get(
+                    "HTTP_REMOTE_ADDR"
+                ) or request.META.get("HTTP_X_FORWARDED_FOR", "")
                 if x_forwarded_for:
-                    ip = x_forwarded_for.split(',')[0]
+                    ip = x_forwarded_for.split(",")[0]
                 else:
-                    ip = request.META.get('REMOTE_ADDR',"")
+                    ip = request.META.get("REMOTE_ADDR", "")
                 return ip
-
 
     def validate(self, value):
         super().validate(value)
         if self.fail_mode:
             raise ValidationError(
-                    self.error_messages["captcha_error"], code="captcha_error"
-                )
+                self.error_messages["captcha_error"], code="captcha_error"
+            )
         if not self.dev_mode:
             try:
                 check_captcha = submit(
@@ -80,19 +90,19 @@ class ReCaptchaField(forms.CharField):
                 )
 
             if not check_captcha.is_valid:
-                # logger.warning(
-                #     "ReCAPTCHA validation failed due to: %s" % check_captcha.error_codes
-                # )
+                logger.warning(
+                    "ReCAPTCHA validation failed due to: %s" % check_captcha.error_codes
+                )
                 raise ValidationError(
                     self.error_messages["captcha_invalid"], code="captcha_invalid"
                 )
 
             required_score = self.widget.attrs.get("required_score")
             if float(required_score) > float(check_captcha.extra_data.get("score", 0)):
-                # logger.warning(
-                #     "ReCAPTCHA validation failed due to its score of %s"
-                #     " being lower than the required amount." % score
-                # )
+                logger.warning(
+                    "ReCAPTCHA validation failed due to its score of %s"
+                    " being lower than the required amount." % score
+                )
                 raise ValidationError(
                     self.error_messages["captcha_invalid"], code="captcha_invalid"
                 )

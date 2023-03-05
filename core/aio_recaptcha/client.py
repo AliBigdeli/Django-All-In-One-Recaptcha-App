@@ -2,7 +2,11 @@ import json
 from urllib.parse import urlencode
 from urllib.request import ProxyHandler, Request, build_opener
 from urllib.error import URLError
-from .app_settings import RECAPTCHA_DOMAIN, RECAPTCHA_PROXY, RECAPTCHA_VERIFY_REQUEST_TIMEOUT
+from .app_settings import (
+    RECAPTCHA_DOMAIN,
+    RECAPTCHA_PROXY,
+    RECAPTCHA_VERIFY_REQUEST_TIMEOUT,
+)
 
 
 class RecaptchaResponse:
@@ -13,7 +17,6 @@ class RecaptchaResponse:
 
 
 def recaptcha_request(params):
-
     request_object = Request(
         url=f"https://{RECAPTCHA_DOMAIN}/recaptcha/api/siteverify",
         data=params,
@@ -25,13 +28,13 @@ def recaptcha_request(params):
 
     # holding args for opener
     opener_args = []
-    
+
     # adding proxies if available
     proxies = RECAPTCHA_PROXY
     if proxies:
         opener_args = [ProxyHandler(proxies)]
-       
-    # building opener adn making it ready 
+
+    # building opener adn making it ready
     opener = build_opener(*opener_args)
 
     # creating request object
@@ -69,23 +72,23 @@ def submit(recaptcha_response, secret_key, remoteip):
     except URLError:
         return RecaptchaResponse(
             is_valid=False,
-            error_codes=['browser-error'],
+            error_codes=["browser-error"],
             extra_data=None,
         )
-        
+
     # loading response as a json object
     data = json.loads(response.read().decode("utf-8"))
-    '''
+    """
     'success': # either true for successful or false for unsuccessful
     'challenge_ts': # datetime of request challenge
     'hostname': # host name of the server
     'score': # result of score
     'action': # will be 'form' in django forms or action name you choose in api
-    '''
-    
+    """
+
     # closing the request
     response.close()
-    
+
     # returning the result of challenge
     return RecaptchaResponse(
         is_valid=data.pop("success"),
