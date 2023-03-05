@@ -162,6 +162,22 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://www.google.com/recaptcha/api.js?render=6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r"></script>
+<script>
+    function renew_captcha() {
+        grecaptcha.ready(function () {
+            // do request for recaptcha token
+            // response is promise with passed token
+            grecaptcha.execute('6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r', { action: 'validate_captcha' })
+                .then(function (token) {
+                    // add token value to form
+                    $('#captcha').val(token)
+                    // console.log(token)
+                });
+        });
+    }
+    renew_captcha()
+</script>
 <script>
     $("#api-form").submit(function (event) {
         event.preventDefault();
@@ -174,25 +190,20 @@
             dataType: 'application/json',
             contentType: false,
             processData: false,
-            complete: function () {
-                location.reload()
+            complete: function (xhr, textStatus) {
+                if (xhr.status != 201) {
+                    toastr["error"](xhr.responseText)
+                }
+                else {
+                    toastr["success"](xhr.responseText)
+                }
+                document.getElementById("api-form").reset();
+                renew_captcha()
             }
         });
 
     });
 
 </script>
-<script src="https://www.google.com/recaptcha/api.js?render=6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r"></script>
-<script>
-    grecaptcha.ready(function () {
-        // do request for recaptcha token
-        // response is promise with passed token
-        grecaptcha.execute('6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r', { action: 'validate_captcha' })
-            .then(function (token) {
-                // add token value to form
-                $('#captcha').val(token)
-                // console.log(token)
-            });
-    });
-</script>
+
 {% endblock %}
