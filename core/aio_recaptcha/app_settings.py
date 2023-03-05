@@ -16,8 +16,8 @@ RECAPTCHA_ADMIN_ENABLE = getattr(settings, "RECAPTCHA_ADMIN_ENABLE", False)
 RECAPTCHA_VERIFY_REQUEST_TIMEOUT = getattr(
     settings, "RECAPTCHA_VERIFY_REQUEST_TIMEOUT", 10
 )
-RECAPTCHA_DEV_MODE = getattr(settings, "RECAPTCHA_DEV_MODE", True)
-RECAPTCHA_ALWAYS_FAIL = getattr(settings, "RECAPTCHA_ALWAYS_FAIL", True)
+RECAPTCHA_DEV_MODE = getattr(settings, "RECAPTCHA_DEV_MODE", False)
+RECAPTCHA_ALWAYS_FAIL = getattr(settings, "RECAPTCHA_ALWAYS_FAIL", False)
 RECAPTCHA_PROXY = getattr(settings, "RECAPTCHA_PROXY", None)
 RECAPTCHA_DOMAIN = getattr(settings, "RECAPTCHA_DOMAIN", "www.google.com")
 

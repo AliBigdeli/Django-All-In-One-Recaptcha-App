@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+
+{% load aio_recaptcha_tags %}
 {% block extra_css %}
 <style>
     .logo {
@@ -162,13 +164,13 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://www.google.com/recaptcha/api.js?render=6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r"></script>
+<script src="https://www.google.com/recaptcha/api.js?render={% get_site_key %}"></script>
 <script>
     function renew_captcha() {
         grecaptcha.ready(function () {
             // do request for recaptcha token
             // response is promise with passed token
-            grecaptcha.execute('6LcBC_kZAAAAAEZLiwQ2C0FGQE1VD7yYX2FSwW0r', { action: 'validate_captcha' })
+            grecaptcha.execute('{% get_site_key %}', { action: 'validate_captcha' })
                 .then(function (token) {
                     // add token value to form
                     $('#captcha').val(token)
