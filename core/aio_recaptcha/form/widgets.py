@@ -2,12 +2,12 @@ import uuid
 from urllib.parse import urlencode
 from django.forms import widgets
 
-from .app_settings import RECAPTCHA_DOMAIN,RECAPTCHA_REQUIRED_SCORE
+from aio_recaptcha.app_settings import RECAPTCHA_DOMAIN,RECAPTCHA_REQUIRED_SCORE
 
 class ReCaptchaBase(widgets.Widget):
     """
     Base widget to be used for Google ReCAPTCHA.
-    public_key -- String value: can optionally be passed to not make use of the
+    site_key -- String value: can optionally be passed to not make use of the
         project wide Google Site Key.
     """
 
@@ -26,7 +26,7 @@ class ReCaptchaBase(widgets.Widget):
         params = urlencode(self.api_params)
         context.update(
             {
-                "public_key": self.attrs["data-sitekey"],
+                "site_key": self.attrs["data-sitekey"],
                 "widget_uuid": self.uuid,
                 "api_params": params,
                 "recaptcha_domain": RECAPTCHA_DOMAIN,

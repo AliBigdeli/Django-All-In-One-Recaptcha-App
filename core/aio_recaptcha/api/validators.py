@@ -4,15 +4,8 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.serializers import ValidationError
 
-from .client import RecaptchaResponse,submit
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_REMOTE_ADDR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+from aio_recaptcha.client import RecaptchaResponse,submit
+from aio_recaptcha.app_settings import RECAPTCHA_DEV_MODE,RECAPTCHA_ALWAYS_FAIL
 
 
 class ReCaptchaValidator:
@@ -25,17 +18,6 @@ class ReCaptchaValidator:
     recaptcha_client_ip = ""
     recaptcha_secret_key = ""
 
-    @staticmethod
-    def is_testing() -> bool:
-        return getattr(settings, "DRF_RECAPTCHA_TESTING", False)
-
-    def testing_validation(self):
-        testing_result = getattr(settings, "DRF_RECAPTCHA_TESTING_PASS", True)
-        if not testing_result:
-            raise ValidationError(
-                self.messages["captcha_invalid"], code="captcha_invalid"
-            )
-
     def set_client_ip(self, serializer_field):
         request = serializer_field.context.get("request")
         if not request:
@@ -43,13 +25,22 @@ class ReCaptchaValidator:
                 "Couldn't get client ip address. Check your serializer gets context with request."
             )
 
-        self.recaptcha_client_ip= get_client_ip(request)
+        self.recaptcha_client_ip= self.get_client_ip(request)
 
+    @staticmethod
+    def get_client_ip(request):
+        x_forwarded_for = request.META.get('HTTP_REMOTE_ADDR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
     def get_response(self, value: str) -> RecaptchaResponse:
         try:
             check_captcha = submit(
                 recaptcha_response=value,
-                private_key=self.recaptcha_secret_key,
+                secret_key=self.recaptcha_secret_key,
                 remoteip=self.recaptcha_client_ip,
             )
         except HTTPError:  # Catch timeouts, etc
@@ -74,13 +65,17 @@ class ReCaptchaV3Validator(ReCaptchaValidator):
         self.recaptcha_required_score = required_score
         self.recaptcha_secret_key = secret_key
         self.score = None
-
+        self.dev_mode = RECAPTCHA_DEV_MODE
+        self.fail_mode = RECAPTCHA_ALWAYS_FAIL
+        
+    
     def __call__(self, value, serializer_field=None):
         if serializer_field and not self.recaptcha_client_ip:
             self.set_client_ip(serializer_field)
 
-        if self.is_testing():
-            self.testing_validation()
+        if self.dev_mode:
+            if self.fail_mode:
+                raise ValidationError(self.messages["captcha_error"], code="captcha_error")
             return
 
         check_captcha = self.get_response(value)

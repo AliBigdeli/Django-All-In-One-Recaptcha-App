@@ -1,14 +1,13 @@
-import logging
 import sys
-from urllib.error import HTTPError
-
 from django import forms
-from .app_settings import RECAPTCHAV3_PUBLIC_KEY,RECAPTCHAV3_PRIVATE_KEY,RECAPTCHA_DEV_MODE
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.utils.translation import gettext_lazy as _
+from urllib.error import HTTPError
 
-from aio_recaptcha import client
-from aio_recaptcha.widgets import ReCaptchaBase, ReCaptchaV3
+
+from aio_recaptcha.client import submit
+from aio_recaptcha.form.widgets import ReCaptchaBase, ReCaptchaV3
+from aio_recaptcha.app_settings import RECAPTCHAV3_SITE_KEY, RECAPTCHAV3_SECRET_KEY, RECAPTCHA_DEV_MODE ,RECAPTCHA_ALWAYS_FAIL
 
 
 class ReCaptchaField(forms.CharField):
@@ -18,7 +17,7 @@ class ReCaptchaField(forms.CharField):
         "captcha_error": _("Error verifying reCAPTCHA, please try again."),
     }
 
-    def __init__(self,*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         ReCaptchaField can accepts attributes which is a dictionary of
         attributes to be passed to the ReCaptcha widget class. The widget will
@@ -28,41 +27,50 @@ class ReCaptchaField(forms.CharField):
         """
         super().__init__(*args, **kwargs)
 
+        # check if the widget is an instance of Recaptcha
         if not isinstance(self.widget, ReCaptchaBase):
             raise ImproperlyConfigured(
-                "captcha.fields.ReCaptchaField.widget"
-                " must be a subclass of captcha.widgets.ReCaptchaBase"
+                """aio_recaptcha.fields.ReCaptchaField.widget must be a subclass of aio_recaptcha.widgets.ReCaptchaBase"""
             )
 
         # reCAPTCHA fields are always required.
         self.required = True
 
         # Setup instance variables.
-        self.private_key =  RECAPTCHAV3_PRIVATE_KEY
-        self.public_key = RECAPTCHAV3_PUBLIC_KEY
+        self.secret_key = RECAPTCHAV3_SECRET_KEY
+        self.site_key = RECAPTCHAV3_SITE_KEY
 
         # Update widget attrs with data-sitekey.
-        self.widget.attrs["data-sitekey"] = self.public_key
+        self.widget.attrs["data-sitekey"] = self.site_key
+        
+        # check to see if we are running on dev mode
         self.dev_mode = RECAPTCHA_DEV_MODE
 
+        self.fail_mode = RECAPTCHA_ALWAYS_FAIL
     def get_remote_ip(self):
-        f = sys._getframe()
-        while f:
-            request = f.f_locals.get("request")
-            if request:
-                remote_ip = request.META.get("REMOTE_ADDR", "")
-                forwarded_ip = request.META.get("HTTP_X_FORWARDED_FOR", "")
-                ip = remote_ip if not forwarded_ip else forwarded_ip
+        frame = sys._getframe()
+        while frame and frame.f_back is not None:
+            frame = frame.f_back
+            if request := frame.f_locals.get("request"):
+                x_forwarded_for = request.META.get('HTTP_REMOTE_ADDR') or request.META.get("HTTP_X_FORWARDED_FOR", "")
+                if x_forwarded_for:
+                    ip = x_forwarded_for.split(',')[0]
+                else:
+                    ip = request.META.get('REMOTE_ADDR',"")
                 return ip
-            f = f.f_back
+
 
     def validate(self, value):
         super().validate(value)
+        if self.fail_mode:
+            raise ValidationError(
+                    self.error_messages["captcha_error"], code="captcha_error"
+                )
         if not self.dev_mode:
             try:
-                check_captcha = client.submit(
+                check_captcha = submit(
                     recaptcha_response=value,
-                    private_key=self.private_key,
+                    secret_key=self.secret_key,
                     remoteip=self.get_remote_ip(),
                 )
 
@@ -88,6 +96,3 @@ class ReCaptchaField(forms.CharField):
                 raise ValidationError(
                     self.error_messages["captcha_invalid"], code="captcha_invalid"
                 )
-                
-                
-

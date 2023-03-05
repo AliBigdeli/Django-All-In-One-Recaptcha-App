@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from ..models import NewsLetter
-from aio_recaptcha.serializers import ReCaptchaV3Field
+from aio_recaptcha.api.serializers import ReCaptchaV3Field
 
 
 class NewsLetterSerializer(serializers.ModelSerializer):
